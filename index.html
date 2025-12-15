@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento Escolar V28 - Import</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="light">
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>Login Escolar</h2>
+            <p>Acesso Restrito ao Sistema</p>
+            <button class="google-btn" id="btnLogin">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+                Entrar com Google
+            </button>
+            <p id="login-msg"></p>
+        </div>
+        <div class="login-footer">&copy; 2025 Miguel dos Santos</div>
+    </div>
+
+    <div id="app-container">
+        <nav class="top-nav">
+            <div class="nav-brand">GERENCIAMENTO ESCOLAR</div>
+            <div class="inst-tabs">
+                <button class="inst-tab active" onclick="app.setInstitution('medio')">CEPI Divino Pai Eterno</button>
+                <button class="inst-tab" onclick="app.setInstitution('facul')">Aphonsiano</button>
+            </div>
+            <div class="top-controls">
+                <button class="btn-outline" onclick="app.toggleTheme()"><i class="fas fa-adjust"></i> Tema</button>
+                <button class="btn-primary" onclick="app.saveData()"><i class="fas fa-save"></i> Salvar</button>
+            </div>
+            <div class="user-profile">
+                <div style="text-align:right; line-height:1.2;">
+                    <div id="userName">Usuário</div>
+                    <button id="btnLogout" class="btn-logout">Sair</button>
+                </div>
+                <img id="userImg" class="user-avatar" src="" alt="User">
+            </div>
+        </nav>
+
+        <div class="main-container">
+            <aside>
+                <div class="sidebar-header">GERAL</div>
+                <div class="menu-item" onclick="app.showSchedule()"><i class="far fa-calendar-alt"></i> Meu Horário</div>
+                
+                <div class="sidebar-header">DISCIPLINAS</div>
+                <div class="subject-list" id="subject-list">
+                    <p style="text-align:center; font-size:0.8rem; color:#888;">Carregando...</p>
+                </div>
+                <div class="sidebar-footer">
+                    <button class="btn-primary btn-block" onclick="app.openModal()">+ Nova Matéria</button>
+                    <div class="copyright">&copy; 2025 Miguel dos Santos<br>Todos os direitos reservados.</div>
+                </div>
+            </aside>
+
+            <div class="content-area">
+                
+                <div id="empty-view" class="empty-state">
+                    <i class="fas fa-school"></i>
+                    <h2>Bem-vindo, Professor</h2>
+                    <p>Selecione uma disciplina ou configure seu horário.</p>
+                </div>
+
+                <div id="schedule-view" style="display:none;">
+                    <h2 class="page-title">Grade Horária Semanal</h2>
+                    <div class="card">
+                        <p style="color:#666; margin-bottom:15px;">Defina suas aulas semanais.</p>
+                        <table id="schedule-table">
+                            <thead><tr><th>Dia</th><th>Matérias / Turmas</th><th>Ação</th></tr></thead>
+                            <tbody id="schedule-body"></tbody>
+                        </table>
+                        <div class="add-schedule-row">
+                            <select id="schDay">
+                                <option value="Segunda">Segunda-feira</option>
+                                <option value="Terca">Terça-feira</option>
+                                <option value="Quarta">Quarta-feira</option>
+                                <option value="Quinta">Quinta-feira</option>
+                                <option value="Sexta">Sexta-feira</option>
+                            </select>
+                            <input type="text" id="schText" placeholder="Ex: Matemática (1º A)...">
+                            <button class="btn-primary" onclick="app.addScheduleItem()">Adicionar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="subject-view" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                        <h2 id="page-title">Nome da Matéria</h2>
+                        <button class="btn-outline btn-danger-outline" onclick="app.deleteSubject()">Excluir Matéria</button>
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="app.switchTab('alunos')">Alunos</button>
+                        <button class="tab-btn" onclick="app.switchTab('planning')">Planejamento</button>
+                        <button class="tab-btn" onclick="app.switchTab('chamada')">Chamada</button>
+                        <button class="tab-btn" onclick="app.switchTab('notas')">Notas</button>
+                        <button class="tab-btn" onclick="app.switchTab('trabalhos')">Trabalhos</button>
+                        <button class="tab-btn" onclick="app.switchTab('relatorios')">Relatórios</button>
+                    </div>
+
+                    <div id="tab-alunos" class="tab-pane active">
+                        <div class="card">
+                            <h3>Cadastrar Aluno</h3>
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="newStudentName" placeholder="Nome do Aluno..." style="margin:0">
+                                <button class="btn-primary" onclick="app.addStudent()">Adicionar</button>
+                            </div>
+                        </div>
+
+                        <div class="card" style="border-left: 4px solid var(--success);">
+                            <h3><i class="fas fa-file-import"></i> Importação em Massa (TXT)</h3>
+                            <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">
+                                Crie um arquivo no Bloco de Notas com o nome de cada aluno em uma linha. Selecione o arquivo abaixo para importar todos de uma vez.
+                            </p>
+                            <div style="display:flex; gap:10px; align-items: center; flex-wrap: wrap;">
+                                <input type="file" id="importFile" accept=".txt" style="margin:0; flex:1;">
+                                <button class="btn-primary" onclick="app.importStudentsTxt()">Importar Lista</button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h4>Lista de Alunos (<span id="student-count">0</span>)</h4>
+                            <table id="table-students"><thead><tr><th>Nome</th><th>Ação</th></tr></thead><tbody></tbody></table>
+                        </div>
+                    </div>
+
+                    <div id="tab-planning" class="tab-pane">
+                        <div class="plan-container">
+                            <div class="plan-history">
+                                <h4>Histórico</h4>
+                                <div id="plan-list-items"></div>
+                                <button class="btn-outline btn-block" style="margin-top:10px;" onclick="app.printPlans()">Imprimir</button>
+                            </div>
+                            <div class="plan-form card">
+                                <h3>Novo Plano de Aula</h3>
+                                <div class="form-grid">
+                                    <div><label>Data</label><input type="date" id="planDate"></div>
+                                    <div><label>Qtd Aulas</label><input type="number" id="planQty" value="2"></div>
+                                </div>
+                                <label>Conteúdo</label><textarea id="planContent" rows="2"></textarea>
+                                <label>Objetivos</label><textarea id="planObj" rows="2"></textarea>
+                                <label>Metodologia</label><textarea id="planMet" rows="2"></textarea>
+                                <div class="form-grid">
+                                    <div><label>Recursos</label><textarea id="planRec" rows="2"></textarea></div>
+                                    <div><label>Avaliação</label><textarea id="planEval" rows="2"></textarea></div>
+                                </div>
+                                <label>Bibliografia</label><textarea id="planBib" rows="1"></textarea>
+                                <button class="btn-primary btn-block" id="btnSavePlan">Salvar Plano</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-chamada" class="tab-pane">
+                        <div class="card">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                <h3>Chamada</h3>
+                                <input type="date" id="attDate">
+                            </div>
+                            <table id="table-attendance">
+                                <thead>
+                                    <tr>
+                                        <th>Alunos</th> <th style="text-align:center">Presença</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <br><button class="btn-primary btn-block" onclick="app.saveAttendance()">Salvar</button>
+                        </div>
+                    </div>
+
+                    <div id="tab-notas" class="tab-pane">
+                        <div class="card">
+                            <h3>Notas</h3>
+                            <div style="overflow-x:auto;"><table id="table-grades"><thead id="grades-header"></thead><tbody id="grades-body"></tbody></table></div>
+                        </div>
+                    </div>
+
+                    <div id="tab-trabalhos" class="tab-pane">
+                        <div class="card card-accent">
+                            <h3>Tarefas</h3>
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="taskTitle" placeholder="Título...">
+                                <input type="date" id="taskDate">
+                                <button class="btn-primary" id="btnSaveTask">Criar</button>
+                            </div>
+                        </div>
+                        <div id="tasks-list"></div>
+                    </div>
+
+                    <div id="tab-relatorios" class="tab-pane">
+                        <div class="card">
+                            <h3>Relatórios</h3>
+                            <div style="display:flex; gap:10px; align-items:flex-end;">
+                                <div style="flex:1"><label>Tipo</label><select id="rType"><option value="freq">Frequência</option></select></div>
+                                <div><label>Início</label><input type="date" id="rStart"></div>
+                                <div><label>Fim</label><input type="date" id="rEnd"></div>
+                                <button class="btn-primary" onclick="app.genReport()">Gerar</button>
+                            </div>
+                            <div id="report-output" style="margin-top:20px"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-subject" class="modal-overlay">
+        <div class="modal">
+            <h3>Nova Disciplina</h3>
+            <input type="text" id="modalSubName" placeholder="Nome da Matéria...">
+            <div class="modal-actions">
+                <button class="btn-outline" onclick="app.closeModal()">Cancelar</button>
+                <button class="btn-primary" onclick="app.createSubject()">Criar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
